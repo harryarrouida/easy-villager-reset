@@ -1,0 +1,17 @@
+{
+  "stats": {
+    "minecraft:used": {
+      "minecraft:lectern": 1
+    },
+    "minecraft:custom": {
+      "minecraft:talked_to_villager": 1,
+      "minecraft:time_since_rest": 338,
+      "minecraft:walk_one_cm": 561,
+      "minecraft:total_world_time": 366,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 338,
+      "minecraft:time_since_death": 338
+    }
+  },
+  "DataVersion": 4671
+}

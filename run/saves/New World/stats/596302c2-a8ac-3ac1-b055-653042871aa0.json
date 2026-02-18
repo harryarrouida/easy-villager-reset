@@ -1,0 +1,22 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:traded_with_villager": 5,
+      "minecraft:talked_to_villager": 2,
+      "minecraft:time_since_rest": 958,
+      "minecraft:walk_one_cm": 799,
+      "minecraft:total_world_time": 1441,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 958,
+      "minecraft:time_since_death": 958
+    },
+    "minecraft:crafted": {
+      "minecraft:bookshelf": 5,
+      "minecraft:air": 0
+    },
+    "minecraft:used": {
+      "minecraft:lectern": 3
+    }
+  },
+  "DataVersion": 4671
+}

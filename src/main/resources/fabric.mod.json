@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "easy-villager-reset",
+  "version": "${version}",
+  "name": "easy-villager-reset",
+  "description": "A simple mod that resets villager trades when their workstation is broken.",
+  "authors": ["Valenyqs"],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/easy-villager-reset/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.easyvillagerreset.easyVillagerReset.client.EasyVillagerResetDataGenerator"
+    ],
+    "client": [
+      "com.easyvillagerreset.easyVillagerReset.client.EasyVillagerResetClient"
+    ],
+    "main": ["com.easyvillagerreset.easyVillagerReset.EasyVillagerReset"]
+  },
+  "mixins": [
+    "easy-villager-reset.mixins.json",
+    {
+      "config": "easy-villager-reset.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
