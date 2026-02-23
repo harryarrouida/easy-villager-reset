@@ -13,6 +13,8 @@ import net.minecraft.util.math.Box
 import net.minecraft.text.Text
 import net.minecraft.village.TradeOfferList
 import net.minecraft.util.ActionResult
+import me.shedaniel.autoconfig.AutoConfig
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 
 class EasyVillagerReset : ModInitializer {
 
@@ -25,8 +27,19 @@ class EasyVillagerReset : ModInitializer {
         )
     }
 
+    private lateinit var configHolder: me.shedaniel.autoconfig.ConfigHolder<EasyVillagerResetConfig>
+    private lateinit var noneProfession: VillagerProfession
+    private lateinit var noneProfessionEntry: net.minecraft.registry.entry.RegistryEntry<VillagerProfession>
+
     override fun onInitialize() {
-        // --- Event 1: Break a workstation → reset the closest villager within 5 blocks ---
+        // Register Cloth Config
+        configHolder = AutoConfig.register(EasyVillagerResetConfig::class.java, ::GsonConfigSerializer)
+
+        // Cache professions for performance
+        noneProfession = Registries.VILLAGER_PROFESSION.get(VillagerProfession.NONE)!!
+        noneProfessionEntry = Registries.VILLAGER_PROFESSION.getEntry(noneProfession)
+
+        // --- Event 1: Break a workstation → reset the closest villager within radius ---
         PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
             if (world.isClient) return@register
 
@@ -34,20 +47,16 @@ class EasyVillagerReset : ModInitializer {
             val blockId = Registries.BLOCK.getId(state.block).path
             if (blockId !in WORKSTATIONS) return@register
 
-            // Find the CLOSEST villager within 5 blocks
+            // Find the CLOSEST villager within configured radius
+            val radius = configHolder.config.resetRadius.toDouble()
             val villager = world.getEntitiesByClass(
                 VillagerEntity::class.java,
-                Box(pos).expand(5.0)
+                Box(pos).expand(radius)
             ) { true }
                 .minByOrNull { it.squaredDistanceTo(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) }
                 ?: return@register
 
-            // Cache the NONE profession entry once per event, not inside any loop
-            val noneEntry = Registries.VILLAGER_PROFESSION.getEntry(
-                Registries.VILLAGER_PROFESSION.get(VillagerProfession.NONE)
-            )
-
-            villager.villagerData = villager.villagerData.withProfession(noneEntry).withLevel(1)
+            villager.villagerData = villager.villagerData.withProfession(noneProfessionEntry).withLevel(1)
             villager.offers = TradeOfferList()
             villager.experience = 0
             villager.customer = null
@@ -72,13 +81,11 @@ class EasyVillagerReset : ModInitializer {
                     val blockId = Registries.ITEM.getId(heldItem.item).path
                     if (blockId in WORKSTATIONS) {
                         val placedPos = hitResult.blockPos.offset(hitResult.side)
-
-                        // Cache NONE profession once per event
-                        val noneProfession = Registries.VILLAGER_PROFESSION.get(VillagerProfession.NONE)
+                        val radius = configHolder.config.resetRadius.toDouble()
 
                         val villager = world.getEntitiesByClass(
                             VillagerEntity::class.java,
-                            Box(placedPos).expand(5.0)
+                            Box(placedPos).expand(radius)
                         ) { v -> v.villagerData.profession == noneProfession }
                             .minByOrNull {
                                 it.squaredDistanceTo(

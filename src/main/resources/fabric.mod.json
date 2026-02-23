@@ -16,6 +16,7 @@
     "client": [
       "com.easyvillagerreset.easyVillagerReset.client.EasyVillagerResetClient"
     ],
+    "modmenu": ["com.easyvillagerreset.easyVillagerReset.ModMenuIntegration"],
     "main": ["com.easyvillagerreset.easyVillagerReset.EasyVillagerReset"]
   },
   "mixins": [

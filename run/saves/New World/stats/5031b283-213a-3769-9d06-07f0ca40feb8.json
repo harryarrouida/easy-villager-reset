@@ -1,0 +1,39 @@
+{
+  "stats": {
+    "minecraft:custom": {
+      "minecraft:traded_with_villager": 67,
+      "minecraft:talked_to_villager": 20,
+      "minecraft:time_since_rest": 4054,
+      "minecraft:walk_one_cm": 3805,
+      "minecraft:total_world_time": 6361,
+      "minecraft:leave_game": 1,
+      "minecraft:play_time": 4054,
+      "minecraft:damage_dealt": 10,
+      "minecraft:time_since_death": 4054,
+      "minecraft:drop": 1
+    },
+    "minecraft:picked_up": {
+      "minecraft:composter": 1
+    },
+    "minecraft:dropped": {
+      "minecraft:composter": 1
+    },
+    "minecraft:crafted": {
+      "minecraft:lantern": 12,
+      "minecraft:brick": 160,
+      "minecraft:bookshelf": 6,
+      "minecraft:bread": 96,
+      "minecraft:air": 0,
+      "minecraft:cod_bucket": 1,
+      "minecraft:chiseled_stone_bricks": 64
+    },
+    "minecraft:used": {
+      "minecraft:grass_block": 1,
+      "minecraft:stonecutter": 2,
+      "minecraft:lectern": 6,
+      "minecraft:composter": 10,
+      "minecraft:barrel": 1
+    }
+  },
+  "DataVersion": 4671
+}

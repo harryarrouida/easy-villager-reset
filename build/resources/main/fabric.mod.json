@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "easy-villager-reset",
-  "version": "1.0-SNAPSHOT",
+  "version": "1.2-beta",
   "name": "easy-villager-reset",
   "description": "A simple mod that resets villager trades when their workstation is broken.",
   "authors": ["Valenyqs"],
@@ -16,6 +16,7 @@
     "client": [
       "com.easyvillagerreset.easyVillagerReset.client.EasyVillagerResetClient"
     ],
+    "modmenu": ["com.easyvillagerreset.easyVillagerReset.ModMenuIntegration"],
     "main": ["com.easyvillagerreset.easyVillagerReset.EasyVillagerReset"]
   },
   "mixins": [

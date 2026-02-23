@@ -1,6 +1,6 @@
 version:4671
 ao:false
-biomeBlendRadius:1
+biomeBlendRadius:0
 chunkSectionFadeInTime:0.75
 cutoutLeaves:false
 enableVsync:false
@@ -8,7 +8,7 @@ entityDistanceScaling:0.5
 entityShadows:false
 forceUnicodeFont:false
 japaneseGlyphVariants:false
-fov:0.0
+fov:0.5
 fovEffectScale:1.0
 darknessEffectScale:1.0
 glintSpeed:0.5
@@ -17,10 +17,10 @@ graphicsPreset:"custom"
 prioritizeChunkUpdates:0
 fullscreen:true
 gamma:0.5
-guiScale:0
+guiScale:4
 maxAnisotropyBit:1
 textureFiltering:0
-maxFps:120
+maxFps:260
 improvedTransparency:false
 inactivityFpsLimit:"afk"
 mipmapLevels:2
@@ -28,8 +28,8 @@ narrator:0
 particles:1
 reducedDebugInfo:false
 renderClouds:"fast"
-cloudRange:32
-renderDistance:5
+cloudRange:2
+renderDistance:2
 simulationDistance:5
 screenEffectScale:1.0
 soundDevice:""
@@ -102,7 +102,7 @@ saveChatDrafts:false
 panoramaScrollSpeed:1.0
 telemetryOptInExtra:false
 onboardAccessibility:false
-menuBackgroundBlurriness:2
+menuBackgroundBlurriness:0
 startedCleanly:true
 musicToast:"never"
 musicFrequency:"DEFAULT"

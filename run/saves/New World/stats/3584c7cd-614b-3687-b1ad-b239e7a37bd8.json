@@ -1,0 +1,41 @@
+{
+  "stats": {
+    "minecraft:crafted": {
+      "minecraft:lantern": 6,
+      "minecraft:bookshelf": 19,
+      "minecraft:air": 0,
+      "minecraft:emerald": 9
+    },
+    "minecraft:custom": {
+      "minecraft:traded_with_villager": 34,
+      "minecraft:talked_to_villager": 18,
+      "minecraft:time_since_rest": 8763,
+      "minecraft:walk_one_cm": 20904,
+      "minecraft:leave_game": 1,
+      "minecraft:mob_kills": 3,
+      "minecraft:damage_dealt": 570,
+      "minecraft:play_time": 8763,
+      "minecraft:jump": 16,
+      "minecraft:time_since_death": 8763,
+      "minecraft:sprint_one_cm": 918,
+      "minecraft:total_world_time": 19879,
+      "minecraft:fly_one_cm": 3599,
+      "minecraft:crouch_one_cm": 188,
+      "minecraft:sneak_time": 28
+    },
+    "minecraft:used": {
+      "minecraft:oak_trapdoor": 3,
+      "minecraft:oak_fence": 4,
+      "minecraft:lectern": 9,
+      "minecraft:villager_spawn_egg": 4,
+      "minecraft:netherite_sword": 6,
+      "minecraft:spruce_trapdoor": 2,
+      "minecraft:smoker": 6,
+      "minecraft:oak_log": 37
+    },
+    "minecraft:killed": {
+      "minecraft:villager": 3
+    }
+  },
+  "DataVersion": 4671
+}
