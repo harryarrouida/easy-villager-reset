@@ -47,12 +47,14 @@ class EasyVillagerReset : ModInitializer {
             val blockId = Registries.BLOCK.getId(state.block).path
             if (blockId !in WORKSTATIONS) return@register
 
-            // Find the CLOSEST villager within configured radius
-            val radius = configHolder.config.resetRadius.toDouble()
+            // Find the CLOSEST villager within configured radius that has the configured nametag
+            val config = configHolder.config
+            val radius = config.resetRadius.toDouble()
+            val targetName = config.villagerName
             val villager = world.getEntitiesByClass(
                 VillagerEntity::class.java,
                 Box(pos).expand(radius)
-            ) { true }
+            ) { v -> v.customName?.string == targetName }
                 .minByOrNull { it.squaredDistanceTo(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) }
                 ?: return@register
 
@@ -81,12 +83,14 @@ class EasyVillagerReset : ModInitializer {
                     val blockId = Registries.ITEM.getId(heldItem.item).path
                     if (blockId in WORKSTATIONS) {
                         val placedPos = hitResult.blockPos.offset(hitResult.side)
-                        val radius = configHolder.config.resetRadius.toDouble()
+                        val config = configHolder.config
+                        val radius = config.resetRadius.toDouble()
+                        val targetName = config.villagerName
 
                         val villager = world.getEntitiesByClass(
                             VillagerEntity::class.java,
                             Box(placedPos).expand(radius)
-                        ) { v -> v.villagerData.profession == noneProfession }
+                        ) { v -> v.villagerData.profession == noneProfession && v.customName?.string == targetName }
                             .minByOrNull {
                                 it.squaredDistanceTo(
                                     placedPos.x + 0.5,
