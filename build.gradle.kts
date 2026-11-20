@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "2.3.10"
-    id("fabric-loom") version "1.15-SNAPSHOT"
+    kotlin("jvm") version "2.4.21"
+    id("net.fabricmc.fabric-loom") version "1.19.4"
     id("maven-publish")
 }
 
@@ -14,7 +14,7 @@ base {
     archivesName.set(project.property("archives_base_name") as String)
 }
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -48,21 +48,21 @@ repositories {
 dependencies {
     // To change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    mappings("net.fabricmc:yarn:${project.property("yarn_mappings")}:v2")
-    modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
     // Cloth Config + ModMenu
-    modImplementation("me.shedaniel.cloth:cloth-config-fabric:${project.property("cloth_config_version")}")
-    modApi("com.terraformersmc:modmenu:${project.property("modmenu_version")}")
+    implementation("me.shedaniel.cloth:cloth-config-fabric:${project.property("cloth_config_version")}")
+    add("clientImplementation", "com.terraformersmc:modmenu:${project.property("modmenu_version")}")
 }
 
 tasks.processResources {
     inputs.property("version", project.version.toString())
     inputs.property("minecraft_version", project.property("minecraft_version").toString())
     inputs.property("loader_version", project.property("loader_version").toString())
+    inputs.property("kotlin_loader_version", project.property("kotlin_loader_version").toString())
     filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {

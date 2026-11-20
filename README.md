@@ -13,6 +13,8 @@ A simple, lightweight Fabric mod that allows you to reset villager trades effort
 
 ## Prerequisites
 
+Version 1.4 targets Minecraft Java Edition 26.3 on Fabric and requires Java 25.
+
 This mod requires the following dependencies:
 
 - [Fabric Loader](https://fabricmc.net/)
