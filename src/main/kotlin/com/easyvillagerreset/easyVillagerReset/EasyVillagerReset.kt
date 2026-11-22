@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.world.entity.npc.villager.Villager
 import net.minecraft.world.entity.ai.memory.MemoryModuleType
 import net.minecraft.world.item.BlockItem
+import net.minecraft.core.GlobalPos
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.entity.npc.villager.VillagerProfession
@@ -34,7 +35,7 @@ class EasyVillagerReset : ModInitializer {
         // Register Cloth Config
         configHolder = AutoConfig.register(EasyVillagerResetConfig::class.java, ::GsonConfigSerializer)
 
-        // --- Event 1: Break a workstation → reset the closest villager within radius ---
+        // --- Event 1: Break a workstation → reset its eligible villager ---
         PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
             if (world !is ServerLevel) return@register
 
@@ -42,14 +43,18 @@ class EasyVillagerReset : ModInitializer {
             val blockId = BuiltInRegistries.BLOCK.getKey(state.block).path
             if (blockId !in WORKSTATIONS) return@register
 
-            // Find the CLOSEST villager within configured radius that has the configured nametag
+            // Match the recorded job site in this dimension before wiping any trades.
             val config = configHolder.config
             val radius = config.resetRadius.toDouble()
             val targetName = config.villagerName
+            val jobSite = GlobalPos.of(world.dimension(), pos)
             val villager = world.getEntitiesOfClass(
                 Villager::class.java,
                 AABB(pos).inflate(radius)
-            ) { v -> v.customName?.string == targetName }
+            ) { v ->
+                v.customName?.string == targetName &&
+                    v.brain.getMemory(MemoryModuleType.JOB_SITE).orElse(null) == jobSite
+            }
                 .minByOrNull { it.distanceToSqr(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) }
                 ?: return@register
 
