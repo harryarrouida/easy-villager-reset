@@ -1,20 +1,22 @@
 package com.easyvillagerreset.easyVillagerReset
 
+import me.shedaniel.autoconfig.AutoConfig
+import me.shedaniel.autoconfig.ConfigHolder
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
-import net.minecraft.entity.passive.VillagerEntity
-import net.minecraft.entity.ai.brain.MemoryModuleType
-import net.minecraft.item.BlockItem
-import net.minecraft.registry.Registries
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.village.VillagerProfession
-import net.minecraft.util.math.Box
-import net.minecraft.text.Text
-import net.minecraft.village.TradeOfferList
-import net.minecraft.util.ActionResult
-import me.shedaniel.autoconfig.AutoConfig
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer
+import net.minecraft.world.entity.npc.villager.Villager
+import net.minecraft.world.entity.ai.memory.MemoryModuleType
+import net.minecraft.world.item.BlockItem
+import net.minecraft.core.GlobalPos
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.entity.npc.villager.VillagerProfession
+import net.minecraft.world.phys.AABB
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.trading.MerchantOffers
+import net.minecraft.world.InteractionResult
 
 class EasyVillagerReset : ModInitializer {
 
@@ -27,72 +29,74 @@ class EasyVillagerReset : ModInitializer {
         )
     }
 
-    private lateinit var configHolder: me.shedaniel.autoconfig.ConfigHolder<EasyVillagerResetConfig>
-    private lateinit var noneProfession: VillagerProfession
-    private lateinit var noneProfessionEntry: net.minecraft.registry.entry.RegistryEntry<VillagerProfession>
+    private lateinit var configHolder: ConfigHolder<EasyVillagerResetConfig>
 
     override fun onInitialize() {
         // Register Cloth Config
         configHolder = AutoConfig.register(EasyVillagerResetConfig::class.java, ::GsonConfigSerializer)
 
-        // Cache professions for performance
-        noneProfession = Registries.VILLAGER_PROFESSION.get(VillagerProfession.NONE)!!
-        noneProfessionEntry = Registries.VILLAGER_PROFESSION.getEntry(noneProfession)
-
-        // --- Event 1: Break a workstation → reset the closest villager within radius ---
+        // --- Event 1: Break a workstation → reset its eligible villager ---
         PlayerBlockBreakEvents.AFTER.register { world, player, pos, state, _ ->
-            if (world.isClient) return@register
+            if (world !is ServerLevel) return@register
 
             // Early-exit: O(1) set lookup — skips entity search for non-workstation blocks
-            val blockId = Registries.BLOCK.getId(state.block).path
+            val blockId = BuiltInRegistries.BLOCK.getKey(state.block).path
             if (blockId !in WORKSTATIONS) return@register
 
-            // Find the CLOSEST villager within configured radius that has the configured nametag
+            // Match the recorded job site in this dimension before wiping any trades.
             val config = configHolder.config
             val radius = config.resetRadius.toDouble()
             val targetName = config.villagerName
-            val villager = world.getEntitiesByClass(
-                VillagerEntity::class.java,
-                Box(pos).expand(radius)
-            ) { v -> v.customName?.string == targetName }
-                .minByOrNull { it.squaredDistanceTo(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) }
+            val jobSite = GlobalPos.of(world.dimension(), pos)
+            val villager = world.getEntitiesOfClass(
+                Villager::class.java,
+                AABB(pos).inflate(radius)
+            ) { v ->
+                v.customName?.string == targetName &&
+                    v.brain.getMemory(MemoryModuleType.JOB_SITE).orElse(null) == jobSite
+            }
+                .minByOrNull { it.distanceToSqr(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5) }
                 ?: return@register
 
-            villager.villagerData = villager.villagerData.withProfession(noneProfessionEntry).withLevel(1)
-            villager.offers = TradeOfferList()
-            villager.experience = 0
-            villager.customer = null
+            villager.setOffers(MerchantOffers())
+            villager.villagerXp = 0
+            villager.tradingPlayer = null
 
             // Release POI claim + clear brain memories + reinitialize AI
-            villager.releaseTicketFor(MemoryModuleType.JOB_SITE)
-            villager.releaseTicketFor(MemoryModuleType.POTENTIAL_JOB_SITE)
-            villager.brain.forget(MemoryModuleType.JOB_SITE)
-            villager.brain.forget(MemoryModuleType.POTENTIAL_JOB_SITE)
-            villager.reinitializeBrain(world as ServerWorld)
+            villager.releasePoi(MemoryModuleType.JOB_SITE)
+            villager.releasePoi(MemoryModuleType.POTENTIAL_JOB_SITE)
+            villager.brain.eraseMemory(MemoryModuleType.JOB_SITE)
+            villager.brain.eraseMemory(MemoryModuleType.POTENTIAL_JOB_SITE)
+            villager.villagerData = villager.villagerData
+                .withProfession(world.registryAccess(), VillagerProfession.NONE)
+                .withLevel(1)
+            villager.refreshBrain(world)
 
-            player.sendMessage(Text.literal("Villager Reset!"), true)
+            player.sendOverlayMessage(Component.literal("Villager Reset!"))
         }
 
         // --- Event 2: Place a workstation → allow nearest jobless villager to accept it ---
         UseBlockCallback.EVENT.register { player, world, hand, hitResult ->
-            if (!world.isClient) {
-                val heldItem = player.getStackInHand(hand)
+            if (world is ServerLevel) {
+                val heldItem = player.getItemInHand(hand)
 
                 // Early-exit: must be holding a BlockItem (eliminates tools, food, etc. instantly)
                 if (heldItem.item is BlockItem) {
-                    val blockId = Registries.ITEM.getId(heldItem.item).path
+                    val blockId = BuiltInRegistries.ITEM.getKey(heldItem.item).path
                     if (blockId in WORKSTATIONS) {
-                        val placedPos = hitResult.blockPos.offset(hitResult.side)
+                        val placedPos = hitResult.blockPos.relative(hitResult.direction)
                         val config = configHolder.config
                         val radius = config.resetRadius.toDouble()
                         val targetName = config.villagerName
 
-                        val villager = world.getEntitiesByClass(
-                            VillagerEntity::class.java,
-                            Box(placedPos).expand(radius)
-                        ) { v -> v.villagerData.profession == noneProfession && v.customName?.string == targetName }
+                        val villager = world.getEntitiesOfClass(
+                            Villager::class.java,
+                            AABB(placedPos).inflate(radius)
+                        ) { v ->
+                            v.villagerData.profession().`is`(VillagerProfession.NONE) && v.customName?.string == targetName
+                        }
                             .minByOrNull {
-                                it.squaredDistanceTo(
+                                it.distanceToSqr(
                                     placedPos.x + 0.5,
                                     placedPos.y + 0.5,
                                     placedPos.z + 0.5
@@ -100,16 +104,16 @@ class EasyVillagerReset : ModInitializer {
                             }
 
                         villager?.let { v ->
-                            v.releaseTicketFor(MemoryModuleType.JOB_SITE)
-                            v.releaseTicketFor(MemoryModuleType.POTENTIAL_JOB_SITE)
-                            v.brain.forget(MemoryModuleType.JOB_SITE)
-                            v.brain.forget(MemoryModuleType.POTENTIAL_JOB_SITE)
-                            v.reinitializeBrain(world as ServerWorld)
+                            v.releasePoi(MemoryModuleType.JOB_SITE)
+                            v.releasePoi(MemoryModuleType.POTENTIAL_JOB_SITE)
+                            v.brain.eraseMemory(MemoryModuleType.JOB_SITE)
+                            v.brain.eraseMemory(MemoryModuleType.POTENTIAL_JOB_SITE)
+                            v.refreshBrain(world)
                         }
                     }
                 }
             }
-            ActionResult.PASS
+            InteractionResult.PASS
         }
     }
 }

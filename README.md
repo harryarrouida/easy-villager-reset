@@ -6,12 +6,14 @@ A simple, lightweight Fabric mod that allows you to reset villager trades effort
 
 - **Reset Anytime (Even after Trading)**: In vanilla Minecraft, trades are locked forever once you trade. This mod breaks that rule! You can reset a villager's profession, trades, and experience even if they have already been traded with. Just break their workstation.
 - **Nametag Protection**: To prevent accidental resets of your important villagers, the mod only affects villagers named with a specific nametag (Default: `easy-villager`).
-- **Break to Reset**: Breaking a workstation instantly resets the closest named villager (within a configurable radius), wiping their data so they can start fresh.
-- **Improved AI Targeting**: When you place a workstation, the mod ensures the nearest jobless named villager is prioritized to pick it up, preventing other villagers from "stealing" the profession from afar.
+- **Break to Reset**: Breaking a workstation resets the eligible named villager that has it recorded as their job site, within the configured search radius.
+- **Improved AI Targeting**: When you try to place a workstation, the mod refreshes the nearest jobless named villager’s AI. Minecraft still decides which villager claims the workstation.
 - **Configurable**: Adjust the search radius and the required nametag in the config menu.
 - **Lightweight**: Optimized to run only on specific block/item events with minimal impact on performance.
 
 ## Prerequisites
+
+Version 1.5-beta+mc26.3 targets Minecraft Java Edition 26.3 on Fabric and requires Java 25.
 
 This mod requires the following dependencies:
 
@@ -34,13 +36,13 @@ This mod requires the following dependencies:
    - Use a nametag to name your villager `easy-villager` (case-sensitive, default value).
    - Only villagers with this name will be affected by the mod's reset logic.
 2. **Resetting a Villager**:
-   - Place a workstation near the named villager.
+   - Place a workstation near the named villager and wait for them to claim it.
    - If the villager has trades you don't like, simply **break the workstation**.
    - **Crucially**, this works even if you have already traded with them and locked their trades!
-   - The closest named villager within range will have their profession and trades wiped.
+   - The named villager within range who claimed that workstation will have their profession and trades wiped. A workstation without an eligible claimant will leave nearby villagers alone.
 3. **Assigning a Job**:
    - Place a workstation near a jobless named villager.
-   - The mod will trigger the AI to re-evaluate the workstation immediately.
+   - The mod refreshes the nearest jobless named villager’s AI so they can look for a job site.
 
 ## Configuration
 
