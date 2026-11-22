@@ -47,6 +47,8 @@ jobs:
           name: "Easy Villager Reset ${{ steps.version.outputs.VERSION }}"
           tag_name: ${{ github.ref_name }}
           generate_release_notes: true
+          prerelease: true
+          make_latest: false
           files: |
             build/libs/easy-villager-reset-${{ steps.version.outputs.VERSION }}.jar
         env:
